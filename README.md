@@ -1,1 +1,0 @@
-# Bona-Fide-Fourier-Representation
