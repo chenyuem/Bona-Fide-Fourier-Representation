@@ -65,20 +65,20 @@ def gaussianEliminationGeneral(A, v):
             col_temp = A[:,i].copy()
             A[:,i] = A[:,col_swap].copy()
             A[:,col_swap] = col_temp.copy()
-            if A[i,i] != 1:
-                # Fermit little thm
-                A[i,:] = A[i,:]**(v-1) % v
         elif A[i,i] == 0:
             row_swap = np.where(A[i:,i] > 0)[0][0] + i
             row_temp = A[i,:].copy()
             A[i,:] = A[row_swap,:].copy()
             A[row_swap,:] = row_temp.copy()
-            if A[i,i] != 1:
-                A[i,:] = A[i,:]**(v-1) % v
+
+        if A[i,i] != 1:
+            # Fermit little thm
+            A[i,:] = A[i,:]**(v-1) % v
+
         for j in np.where(A[:,i] > 0)[0]:
             if j != i:
                 A[j,:] = (A[j,:] - A[i,:] * A[j,i] % v) % v
-        A = A[:p,:]
+        # A = A[:p,:]
     return A, Perm
 
 def solutionHGeneral(A, Perm, v):

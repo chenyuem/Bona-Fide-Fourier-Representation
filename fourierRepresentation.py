@@ -16,6 +16,7 @@ import argparse
 parser = argparse.ArgumentParser("Fourier representation of multivalue density")
 parser.add_argument("-d","--data", help = "the name of sample data", type=str, default="insurance")
 parser.add_argument("-s","--sample", help = "the number of samples", type=int, default=10000)
+parser.add_argument("-k","--parameter", help = " the hyperparameter to decide the order of fourier coefficients", type=int, default=0)
 args = parser.parse_args()
 
 print "loading data ( %s )..." % args.data
@@ -70,7 +71,7 @@ for i in np.sort(list(set(vNew))):
 
 
 # New k (representing the order of coefficients to keep)
-k = 10
+k = args.parameter
 p = np.max(vNum) - k + 1
 
 print "computing indexes with largest probabilities ..."
@@ -81,13 +82,21 @@ A = (A[1:] - A[0]) % vPrimePerm
 print vPrimePerm
 
 k = 0
+vPos = {}
 for i in np.sort(list(set(vNew))):
+    print i
     Atemp = A[:,k:k+vPerm[i].size]
+    print 'gaussian elimination ...'
     A_ge, Perm = utils_valid.gaussianEliminationGeneral(Atemp, i)
+    print 'building H ...'
     H = utils_valid.solutionHGeneral(A_ge, Perm, i)
-    # print H
+    print 'finding fourier postitions ...'
     pos = utils_valid.fourierCoeffPosition(H, i)
-    print pos
+    k += vPerm[i].size
+    vPos[i] = pos
+
+print vPos[2].shape
+
 
 # When N is large, it's impossible to compute the whole Hadamard matrix H
 '''
