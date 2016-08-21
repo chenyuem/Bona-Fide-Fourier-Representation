@@ -19,6 +19,16 @@ def prime_factors(n):
         factors.append(n)
     return np.array(factors)
 
+def expansion(i, v):
+    assert i < np.prod(v)
+    n = v.size
+    e = np.zeros(n)
+    prod = 1
+    for j in range(n-1,-1,-1):
+        e[j] = i % v[j]
+        i = (i - e[j]) / v[j]
+    return e
+
 def idx_sort(train, m):
 	data_list = []
 	for i in range(m):
@@ -41,7 +51,62 @@ def build_A(p,n,idx_need):
 	A = A.astype('int')
 	return A
 
-def gaussianElimination(A, v):
+def gaussianEliminationGeneral(A, v):
+    Perm = []
+    p = A.shape[0]
+    for i in range(p):
+        row_keep = np.where(np.sum(A, axis=1) > 0)[0]
+        A = A[row_keep]
+        print A
+        if i >= A.shape[0]:
+            break
+        if np.where(A[i:,i] > 0)[0].size == 0:
+            col_swap = np.where(A[i,:] > 0)[0][0]
+            Perm.append((i,col_swap))
+            col_temp = A[:,i].copy()
+            A[:,i] = A[:,col_swap].copy()
+            A[:,col_swap] = col_temp.copy()
+            if A[i,i] != 1:
+                # Fermit little thm
+                A[i,:] = A[i,:]**(v-1) % v
+        elif A[i,i] == 0:
+            row_swap = np.where(A[i:,i] > 0)[0][0] + i
+            row_temp = A[i,:].copy()
+            A[i,:] = A[row_swap,:].copy()
+            A[row_swap,:] = row_temp.copy()
+            if A[i,i] != 1:
+                A[i,:] = A[i,:]**(v-1) % v
+        for j in np.where(A[:,i] > 0)[0]:
+            if j != i:
+                A[j,:] = (A[j,:] - A[i,:] * A[j,i] % v) % v
+        A = A[:p,:]
+        return A, Perm
+
+def solutionHGeneral(A, Perm, v):
+    G = -A[:,A.shape[0]:] % v
+    H = np.append(G,np.eye(G.shape[1]), axis = 0).astype('int')
+    Perm.reverse()
+    if Perm != []:
+        for pair in Perm:
+            i,j = pair
+            row_temp = H[i,:].copy()
+            H[i,:] = H[j,:].copy()
+            H[j,:] = row_temp.copy()
+    return H
+
+def fourierCoeffPosition(H, v):
+    posF = np.zeros([v**(H.shape[1]),H.shape[0]], dtype='int')
+    for k in range(v**(H.shape[1])):
+        # a = "{0:b}".format(k)
+        # a = a.zfill(H.shape[1])
+        # a = [int(char) for char in str(a)]
+        # a = np.array(a)
+        # print H.dot(a) % v
+        a = expansion(k, np.array([v]*H.shape[1]))
+        posF[k,:] = H.dot(a) % v
+    return posF
+
+def gaussianElimination(A):
 	Perm = []
 	p = A.shape[0]
 	for i in range(p):
@@ -177,15 +242,6 @@ def inferenceFourier(data, target, evidenceT, condition, evidenceC):
         return prob
 
 
-def expansion(i, v):
-    assert i < np.prod(v)
-    n = v.size
-    e = np.zeros(n)
-    prod = 1
-    for j in range(n-1,-1,-1):
-        e[j] = i % v[j]
-        i = (i - e[j]) / v[j]
-    return e
 
 def generalHadamard(v):
 

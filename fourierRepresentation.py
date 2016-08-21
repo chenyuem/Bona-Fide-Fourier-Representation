@@ -58,30 +58,36 @@ assert k == n
 # Permutation
 dataPrimePerm = -np.ones_like(dataPrime, dtype='int')
 vPrimePerm = -np.ones_like(vNew, dtype='int')
-Vperm = {}
+vPerm = {}
+vNum = []
 k = 0
 for i in np.sort(list(set(vNew))):
-    Vperm[i] = np.where(vNew==i)[0]
-    dataPrimePerm[:,k:k+Vperm[i].size] = dataPrime[:,Vperm[i]]
-    vPrimePerm[k:k+Vperm[i].size] = vNew[Vperm[i]]
-    k += Vperm[i].size
+    vPerm[i] = np.where(vNew==i)[0]
+    vNum.append(vPerm[i].size)
+    dataPrimePerm[:,k:k+vPerm[i].size] = dataPrime[:,vPerm[i]]
+    vPrimePerm[k:k+vPerm[i].size] = vNew[vPerm[i]]
+    k += vPerm[i].size
 
 
 # New k (representing the order of coefficients to keep)
 k = 10
-p = n - k + 1
+p = np.max(vNum) - k + 1
 
 print "computing indexes with largest probabilities ..."
 idx_list = utils_valid.idx_sort(dataPrimePerm, m)
 A = utils_valid.build_A(p,n,idx_list)
 A = (A[1:] - A[0]) % vPrimePerm
 
+print vPrimePerm
+
 k = 0
 for i in np.sort(list(set(vNew))):
-    Atemp = A[:,k:k+Vperm[i].size]
-    A_ge, Perm = utils_valid.gaussianElimination(Atemp, i)
-
-A_ge, Perm = utils_valid.gaussianElimination(A)
+    Atemp = A[:,k:k+vPerm[i].size]
+    A_ge, Perm = utils_valid.gaussianEliminationGeneral(Atemp, i)
+    H = utils_valid.solutionHGeneral(A_ge, Perm, i)
+    pos = utils_valid.fourierCoeffPosition(H, i)
+    IPython.embed()
+    print pos
 
 # When N is large, it's impossible to compute the whole Hadamard matrix H
 '''
