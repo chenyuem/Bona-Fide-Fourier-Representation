@@ -57,7 +57,6 @@ def gaussianEliminationGeneral(A, v):
     for i in range(p):
         row_keep = np.where(np.sum(A, axis=1) > 0)[0]
         A = A[row_keep]
-        print A
         if i >= A.shape[0]:
             break
         if np.where(A[i:,i] > 0)[0].size == 0:
@@ -80,10 +79,10 @@ def gaussianEliminationGeneral(A, v):
             if j != i:
                 A[j,:] = (A[j,:] - A[i,:] * A[j,i] % v) % v
         A = A[:p,:]
-        return A, Perm
+    return A, Perm
 
 def solutionHGeneral(A, Perm, v):
-    G = -A[:,A.shape[0]:] % v
+    G = (-A[:,A.shape[0]:]) % v
     H = np.append(G,np.eye(G.shape[1]), axis = 0).astype('int')
     Perm.reverse()
     if Perm != []:
@@ -97,12 +96,14 @@ def solutionHGeneral(A, Perm, v):
 def fourierCoeffPosition(H, v):
     posF = np.zeros([v**(H.shape[1]),H.shape[0]], dtype='int')
     for k in range(v**(H.shape[1])):
-        # a = "{0:b}".format(k)
-        # a = a.zfill(H.shape[1])
-        # a = [int(char) for char in str(a)]
-        # a = np.array(a)
-        # print H.dot(a) % v
-        a = expansion(k, np.array([v]*H.shape[1]))
+        if v == 2:
+            a = "{0:b}".format(k)
+            a = a.zfill(H.shape[1])
+            a = [int(char) for char in str(a)]
+            a = np.array(a)
+            # print H.dot(a) % v
+        else:
+            a = expansion(k, np.array([v]*H.shape[1]))
         posF[k,:] = H.dot(a) % v
     return posF
 

@@ -85,8 +85,8 @@ for i in np.sort(list(set(vNew))):
     Atemp = A[:,k:k+vPerm[i].size]
     A_ge, Perm = utils_valid.gaussianEliminationGeneral(Atemp, i)
     H = utils_valid.solutionHGeneral(A_ge, Perm, i)
+    # print H
     pos = utils_valid.fourierCoeffPosition(H, i)
-    IPython.embed()
     print pos
 
 # When N is large, it's impossible to compute the whole Hadamard matrix H
