@@ -107,6 +107,20 @@ def fourierCoeffPosition(H, v):
         posF[k,:] = H.dot(a) % v
     return posF
 
+def computeFourierCoefficientMatrix(pos, data, v):
+    m, n = data.shape
+    numCoeff = pos.shape[0]
+    root = math.cos(2*math.pi/v) + 1j * math.sin(2*math.pi/v)
+    coeff = np.zeros([numCoeff, m], dtype='cfloat')
+    for i in range(numCoeff):
+        posTemp = pos[i,:]
+        coeff[i,:] = root ** (posTemp.dot(data.T))
+    return coeff
+
+
+###################################################################
+
+
 def gaussianElimination(A):
 	Perm = []
 	p = A.shape[0]

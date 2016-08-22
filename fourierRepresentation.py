@@ -95,7 +95,15 @@ for i in np.sort(list(set(vNew))):
     k += vPerm[i].size
     vPos[i] = pos
 
-print vPos[2].shape
+# Computing Fourier Coefficients given data and positions
+coeffMatrix = {}
+k = 0
+for i in np.sort(list(set(vNew))):
+    print i
+    dataTemp = dataPrimePerm[:,k:k+vPerm[i].size]
+    coeffMatrix[i] = utils_valid.computeFourierCoefficientMatrix(vPos[i], dataTemp, i)
+
+print coeffMatrix
 
 
 # When N is large, it's impossible to compute the whole Hadamard matrix H
