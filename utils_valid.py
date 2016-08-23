@@ -117,6 +117,50 @@ def computeFourierCoefficientMatrix(pos, data, v):
         coeff[i,:] = root ** (posTemp.dot(data.T))
     return coeff
 
+def randomAssignment(v):
+    var = np.random.randint(2, size = v.size)
+    value = np.random.randint(np.max(v), size = v.size) % v
+    value[np.where(var==0)] = -1
+    return value
+
+def decomposeData(assignment, vNew, vPrime, vPerm):
+    dataValue = -np.ones(vNew.size, dtype='int')
+    k = 0
+    for j in range(len(vPrime)):
+        if vPrime[j].size > 1:
+            if assignment[j] == -1:
+                dataValue[k:k+vPrime[j].size] = -np.ones(vPrime[j].size, dtype='int')
+            else:
+                dataValue[k:k+vPrime[j].size] = expansion(assignment[j],vPrime[j])
+        else:
+            dataValue[k] = assignment[j]
+        k += vPrime[j].size
+
+    k = 0
+    vAssign = {}
+    dataValuePerm = -np.ones(vNew.size, dtype='int')
+    for i in vPerm.keys():
+        vAssign[i] = dataValue[vPerm[i]]
+        dataValuePerm[k:k+vPerm[i].size] = dataValue[vPerm[i]]
+        k += vPerm[i].size
+
+    return vAssign
+
+def marginalizedInference(vAssign, coeffMatrix):
+    vPosTemp = {}
+    coeffMatrixTemp = {}
+    for i in vAssign.keys():
+        marginalized = np.where(vAssign[i]<0)[0]
+        vPosTemp[i] = np.where( np.sum(vPos[i][:,marginalized], axis=1) == 0 )[0]
+        coeffMatrixTemp[i] = coeffMatrix[i][vPosTemp[i],:]
+        posVar = vPos[i][vPosTemp[i]][:,marginalized]
+
+        coeffVar = coeff[posT]
+        posVar = pos[:,var][posT,:]
+        evidence = np.array(evidence) * 2 - 1
+        prob = inference(np.array(evidence), posVar, coeffVar) * (2**len(marginalized))
+
+
 
 ###################################################################
 

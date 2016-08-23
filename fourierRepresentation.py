@@ -105,6 +105,18 @@ for i in np.sort(list(set(vNew))):
 
 print coeffMatrix
 
+# Inference
+# Random marginal assignment
+for i in np.sort(list(set(vNew))):
+    print i
+    varChosen = np.random.randint(2, size=vPerm[i].size)
+    assignment = np.random.randint(i, size=v.size) % v
+    marginalized = np.where(varChosen==0)[0]
+    posT = np.where( np.sum(vPos[i][:,marginalized], axis=1) == 0)[0]
+
+
+
+
 
 # When N is large, it's impossible to compute the whole Hadamard matrix H
 '''
