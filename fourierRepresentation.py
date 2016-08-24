@@ -120,9 +120,11 @@ for i in np.sort(list(set(vNew))):
     coeffMatrix[i] = utils_valid.computeFourierCoefficientMatrix(vPos[i], dataTemp, i)
     k += vPerm[i].size
 
-print coeffMatrix
+print coeffMatrix.keys()
+for i in coeffMatrix.keys():
+    print coeffMatrix[i].shape
 
-IPython.embed()
+# IPython.embed()
 
 # Inference
 # Random marginal assignment
