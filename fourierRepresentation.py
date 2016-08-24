@@ -128,16 +128,26 @@ IPython.embed()
 np.random.seed(10)
 # prob = np.zeros(N, dtype='cfloat')
 # H = utils_valid.generalHadamard(v)
-for i in range(50):
+probTwo = np.zeros([1000,2])
+for i in range(1000):
     # assignment = utils_valid.expansion(i,v)
     assignment = utils_valid.randomAssignment(v)
     print assignment
     vAssign = utils_valid.decomposeData(assignment, vNew, vPrime, vPerm)
     prob = utils_valid.marginalizedInference(vAssign, coeffMatrix, vPos) / N
     print prob
-    print utils_valid.marginalizedInferenceEmpirical(assignment, dataGT)
+    prob2 = utils_valid.marginalizedInferenceEmpirical(assignment, dataGT)
+    probTwo[i,0] = np.real(prob)
+    probTwo[i,1] = prob2
+
 
 # a = np.conjugate(H).dot(H).dot(f) / N
+x = np.real(probTwo[:,0])
+y = probTwo[:,1]
+x[np.where(x<0)] == 0
+y[np.where(y<0)] == 0
+
+non zeros probabilities inference
 
 
 
