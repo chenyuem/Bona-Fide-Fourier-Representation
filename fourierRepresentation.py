@@ -9,7 +9,7 @@ from numpy.linalg import matrix_rank
 import random
 import IPython
 from scipy.linalg import hadamard
-from cvxpy import *
+# from cvxpy import *
 import math
 import argparse
 
