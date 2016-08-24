@@ -131,7 +131,9 @@ np.random.seed(10)
 probTwo = np.zeros([1000,2])
 for i in range(1000):
     # assignment = utils_valid.expansion(i,v)
-    assignment = utils_valid.randomAssignment(v)
+    # assignment = utils_valid.randomAssignment(v)
+    assignment = dataGT[np.random.randint(m)]
+    assignment[np.where(np.random.randint(2,size=v.size)==0)] = -1
     print assignment
     vAssign = utils_valid.decomposeData(assignment, vNew, vPrime, vPerm)
     prob = utils_valid.marginalizedInference(vAssign, coeffMatrix, vPos) / N
@@ -144,10 +146,13 @@ for i in range(1000):
 # a = np.conjugate(H).dot(H).dot(f) / N
 x = np.real(probTwo[:,0])
 y = probTwo[:,1]
-x[np.where(x<0)] == 0
-y[np.where(y<0)] == 0
+# x[np.where(x<0)] == 0
+# y[np.where(y<0)] == 0
 
-non zeros probabilities inference
+diff = np.abs(x-y) / y
+print np.mean(diff)
+
+# non zeros probabilities inference
 
 
 
