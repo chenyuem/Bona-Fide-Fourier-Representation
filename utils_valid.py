@@ -146,21 +146,42 @@ def decomposeData(assignment, vNew, vPrime, vPerm):
 
     return vAssign
 
-def marginalizedInference(vAssign, coeffMatrix):
-    vPosTemp = {}
+def customizedTensor(M1, M2):
+    assert M1.shape[1] == M2.shape[1]
+    M = np.zeros([M1.shape[0] * M2.shape[0], M1.shape[1]], dtype='cfloat')
+    k = 0
+    for i in range(M1.shape[0]):
+        for j in range(M2.shape[0]):
+            M[k] = M1[i] * M2[j]
+            k += 1
+    return M
+
+def marginalizedInference(vAssign, coeffMatrix, vPos):
     coeffMatrixTemp = {}
     for i in vAssign.keys():
+        m = coeffMatrix[i].shape[1]
         marginalized = np.where(vAssign[i]<0)[0]
-        vPosTemp[i] = np.where( np.sum(vPos[i][:,marginalized], axis=1) == 0 )[0]
-        coeffMatrixTemp[i] = coeffMatrix[i][vPosTemp[i],:]
-        posVar = vPos[i][vPosTemp[i]][:,marginalized]
+        chosen = np.where(vAssign[i]>=0)[0]
+        vPosTemp = np.where( np.sum(vPos[i][:,marginalized], axis=1) == 0 )[0]
+        # coeffMatrixTemp[i] = coeffMatrix[i][vPosTemp,:]
+        posVar = vPos[i][vPosTemp][:,chosen]
+        assign = vAssign[i][chosen]
 
-        coeffVar = coeff[posT]
-        posVar = pos[:,var][posT,:]
-        evidence = np.array(evidence) * 2 - 1
-        prob = inference(np.array(evidence), posVar, coeffVar) * (2**len(marginalized))
+        root = math.cos(2*math.pi/i) + 1j * math.sin(2*math.pi/i)
+        coeffMatrixTemp[i] = (coeffMatrix[i][vPosTemp,:].T * np.conjugate(root ** (posVar.dot(assign) % i)) * (i ** marginalized.size)).T
 
+    M = coeffMatrixTemp[i]
+    for i in vAssign.keys()[:-1]:
+        M = customizedTensor(M,coeffMatrixTemp[i])
 
+    avg = np.mean(M,axis=1)
+    return np.sum(avg)
+
+def marginalizedInferenceEmpirical(assignment, data):
+    chosen = np.where(assignment >= 0)[0]
+    dataChosen = data[:,chosen]
+    diff = np.abs(dataChosen - assignment[chosen])
+    return np.where(np.sum(diff, axis=1)==0)[0].size / float(data.shape[0])
 
 ###################################################################
 

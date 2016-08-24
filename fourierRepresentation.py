@@ -15,16 +15,31 @@ import argparse
 
 parser = argparse.ArgumentParser("Fourier representation of multivalue density")
 parser.add_argument("-d","--data", help = "the name of sample data", type=str, default="insurance")
-parser.add_argument("-s","--sample", help = "the number of samples", type=int, default=10000)
+parser.add_argument("-s","--sample", help = "the number of samples", type=int, default=1000)
+parser.add_argument("-sgt","--sampleGT", help = "the number of samples for ground truth", type=int, default=10000)
 parser.add_argument("-k","--parameter", help = " the hyperparameter to decide the order of fourier coefficients", type=int, default=0)
 args = parser.parse_args()
 
 print "loading data ( %s )..." % args.data
 dataRaw = np.loadtxt("data/" + args.data + "_" + str(args.sample) + ".csv", delimiter=",", skiprows=1)
+dataRawGT = np.loadtxt("data/" + args.data + "_" + str(args.sampleGT) + ".csv", delimiter=",", skiprows=1)
+
+# sanity check
+# v = np.array([2,3,4,6])
+# nn = 100
+# dataRaw = np.random.randint(10,size=[nn+1,v.size]) % v
+
 v = dataRaw[0].astype('int')
 data = dataRaw[1:].astype('int')
+dataGT = dataRawGT[1:].astype('int')
 m, n = data.shape
 N = np.prod(v)
+
+# f = np.zeros(N)
+# bases = np.array([72,24,6,1])
+# for i in range(data.shape[0]):
+#     f[bases.dot(data[i])] += 1
+# f /= float(nn)
 
 # Data preprocessing ...
 # Factorize a number into prime factors
@@ -102,18 +117,27 @@ for i in np.sort(list(set(vNew))):
     print i
     dataTemp = dataPrimePerm[:,k:k+vPerm[i].size]
     coeffMatrix[i] = utils_valid.computeFourierCoefficientMatrix(vPos[i], dataTemp, i)
+    k += vPerm[i].size
 
 print coeffMatrix
 
+IPython.embed()
+
 # Inference
 # Random marginal assignment
-for i in np.sort(list(set(vNew))):
-    print i
-    varChosen = np.random.randint(2, size=vPerm[i].size)
-    assignment = np.random.randint(i, size=v.size) % v
-    marginalized = np.where(varChosen==0)[0]
-    posT = np.where( np.sum(vPos[i][:,marginalized], axis=1) == 0)[0]
+np.random.seed(10)
+# prob = np.zeros(N, dtype='cfloat')
+H = utils_valid.generalHadamard(v)
+for i in range(N):
+    # assignment = utils_valid.expansion(i,v)
+    assignment = utils_valid.randomAssignment(v)
+    print assignment
+    vAssign = utils_valid.decomposeData(assignment, vNew, vPrime, vPerm)
+    prob = utils_valid.marginalizedInference(vAssign, coeffMatrix, vPos) / N
+    print prob
+    print utils_valid.marginalizedInferenceEmpirical(assignment, dataGT)
 
+# a = np.conjugate(H).dot(H).dot(f) / N
 
 
 
