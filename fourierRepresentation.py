@@ -18,6 +18,7 @@ parser.add_argument("-d","--data", help = "the name of sample data", type=str, d
 parser.add_argument("-s","--sample", help = "the number of samples", type=int, default=1000)
 parser.add_argument("-sgt","--sampleGT", help = "the number of samples for ground truth", type=int, default=10000)
 parser.add_argument("-k","--parameter", help = " the hyperparameter to decide the order of fourier coefficients", type=int, default=0)
+parser.add_argument("-i","--inference", help = " the number of inferences", type=int, default=1000)
 args = parser.parse_args()
 
 print "loading data ( %s )..." % args.data
@@ -128,8 +129,9 @@ IPython.embed()
 np.random.seed(10)
 # prob = np.zeros(N, dtype='cfloat')
 # H = utils_valid.generalHadamard(v)
-probTwo = np.zeros([1000,2])
-for i in range(1000):
+probTwo = np.zeros([args.inference,2])
+for i in range(args.inference):
+    print i
     # assignment = utils_valid.expansion(i,v)
     # assignment = utils_valid.randomAssignment(v)
     assignment = dataGT[np.random.randint(m)]
