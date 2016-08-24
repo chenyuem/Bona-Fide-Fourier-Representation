@@ -139,6 +139,7 @@ for i in range(1000):
     prob = utils_valid.marginalizedInference(vAssign, coeffMatrix, vPos) / N
     print prob
     prob2 = utils_valid.marginalizedInferenceEmpirical(assignment, dataGT)
+    print prob2
     probTwo[i,0] = np.real(prob)
     probTwo[i,1] = prob2
 
