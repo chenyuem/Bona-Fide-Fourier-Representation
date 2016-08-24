@@ -128,7 +128,7 @@ IPython.embed()
 np.random.seed(10)
 # prob = np.zeros(N, dtype='cfloat')
 # H = utils_valid.generalHadamard(v)
-for i in range(20):
+for i in range(50):
     # assignment = utils_valid.expansion(i,v)
     assignment = utils_valid.randomAssignment(v)
     print assignment
