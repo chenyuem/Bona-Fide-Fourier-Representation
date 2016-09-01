@@ -137,7 +137,7 @@ prob = np.zeros_like(p)
 for i in range(assignment.shape[0]):
     a = assignment[i]
     vAssign = utils_valid.decomposeData(a, vNew, vPrime, vPerm)
-    prob[i] = utils_valid.marginalizedInference(vAssign, coeffMatrix, vPos) / N
+    prob[i] = np.real(utils_valid.marginalizedInference(vAssign, coeffMatrix, vPos) / N)
 
 # print prob
 # print p
