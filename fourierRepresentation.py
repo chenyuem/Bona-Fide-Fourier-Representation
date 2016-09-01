@@ -12,18 +12,19 @@ from scipy.linalg import hadamard
 # from cvxpy import *
 import math
 import argparse
+import scipy
 
 parser = argparse.ArgumentParser("Fourier representation of multivalue density")
 parser.add_argument("-d","--data", help = "the name of sample data", type=str, default="insurance")
 parser.add_argument("-s","--sample", help = "the number of samples", type=int, default=1000)
-parser.add_argument("-sgt","--sampleGT", help = "the number of samples for ground truth", type=int, default=10000)
+# parser.add_argument("-sgt","--sampleGT", help = "the number of samples for ground truth", type=int, default=10000)
 parser.add_argument("-k","--parameter", help = " the hyperparameter to decide the order of fourier coefficients", type=int, default=0)
 parser.add_argument("-i","--inference", help = " the number of inferences", type=int, default=1000)
 args = parser.parse_args()
 
 print "loading data ( %s )..." % args.data
 dataRaw = np.loadtxt("data/" + args.data + "_" + str(args.sample) + ".csv", delimiter=",", skiprows=1)
-dataRawGT = np.loadtxt("data/" + args.data + "_" + str(args.sampleGT) + ".csv", delimiter=",", skiprows=1)
+# dataRawGT = np.loadtxt("data/" + args.data + "_" + str(args.sampleGT) + ".csv", delimiter=",", skiprows=1)
 
 # sanity check
 # v = np.array([2,3,4,6])
@@ -32,7 +33,7 @@ dataRawGT = np.loadtxt("data/" + args.data + "_" + str(args.sampleGT) + ".csv", 
 
 v = dataRaw[0].astype('int')
 data = dataRaw[1:].astype('int')
-dataGT = dataRawGT[1:].astype('int')
+# dataGT = dataRawGT[1:].astype('int')
 m, n = data.shape
 N = np.prod(v)
 
@@ -124,29 +125,71 @@ print coeffMatrix.keys()
 for i in coeffMatrix.keys():
     print coeffMatrix[i].shape
 
-# IPython.embed()
 
+IPython.embed()
+
+# load random data for inference
+save = np.load('bif/Exact_insurance_3_1000.npy')
+assignment = save[:,:-1].astype('int')
+p = save[:,-1]
+prob = np.zeros_like(p)
+
+for i in range(assignment.shape[0]):
+    a = assignment[i]
+    vAssign = utils_valid.decomposeData(a, vNew, vPrime, vPerm)
+    prob[i] = utils_valid.marginalizedInference(vAssign, coeffMatrix, vPos) / N
+
+# print prob
+# print p
+
+new = np.zeros([p.size,2])
+new[:,0] = prob
+new[:,1] = p
+
+KL = scipy.stats.entropy(p,prob)
+
+
+IPython.embed()
+'''
 # Inference
 # Random marginal assignment
 np.random.seed(10)
 # prob = np.zeros(N, dtype='cfloat')
 # H = utils_valid.generalHadamard(v)
-probTwo = np.zeros([args.inference,2])
+# probTwo = np.zeros([args.inference,2])
+probFourier = np.zeros(args.inference)
+assignmentSave = np.zeros([v.size+1, args.inference],dtype='int')
 for i in range(args.inference):
     print i
     # assignment = utils_valid.expansion(i,v)
-    # assignment = utils_valid.randomAssignment(v)
-    assignment = dataGT[np.random.randint(m)]
-    assignment[np.where(np.random.randint(2,size=v.size)==0)] = -1
+    assignment = utils_valid.randomAssignment(v)
+    # assignment = dataGT[np.random.randint(m)]
+    # assignment[np.where(np.random.randint(2,size=v.size)==0)] = -1
     print assignment
+    CondVarIdx = np.random.randint(np.where(assignment>=0)[0].size)
+    assignmentD = assignment.copy()
+    assignmentD[CondVarIdx] = -1
+
+    assignmentSave[0:v.size,i] = assignment
+    assignmentSave[-1,i] = CondVarIdx
+
     vAssign = utils_valid.decomposeData(assignment, vNew, vPrime, vPerm)
     prob = utils_valid.marginalizedInference(vAssign, coeffMatrix, vPos) / N
     print prob
-    prob2 = utils_valid.marginalizedInferenceEmpirical(assignment, dataGT)
-    print prob2
-    probTwo[i,0] = np.real(prob)
-    probTwo[i,1] = prob2
+    vAssignD = utils_valid.decomposeData(assignmentD, vNew, vPrime, vPerm)
+    probD = utils_valid.marginalizedInference(vAssignD, coeffMatrix, vPos) / N
+    print probD
+    print prob / probD
+    probFourier[i] = prob / probD
+    # prob2 = utils_valid.marginalizedInferenceEmpirical(assignment, dataGT)
+    # print prob2
+    # probTwo[i,0] = np.real(prob)
+    # probTwo[i,1] = prob2
 
+IPython.embed()
+
+output = 'fourier_' + args.data + '_' + str(args.parameter) + '_' + str(args.inference)
+# np.save(output, ())
 
 # a = np.conjugate(H).dot(H).dot(f) / N
 x = np.real(probTwo[:,0])
@@ -156,12 +199,7 @@ y = probTwo[:,1]
 
 diff = np.abs(x-y) / y
 print np.mean(diff)
-
-# non zeros probabilities inference
-
-
-
-
+'''
 # When N is large, it's impossible to compute the whole Hadamard matrix H
 '''
 print "building general hadamard matrix ..."
@@ -188,7 +226,5 @@ assert np.abs(np.sum(np.abs(I))) < 1e-8
 assert np.abs(np.sum(R<0)) < 1e-8
 assert np.abs(np.sum(np.abs(H_CT.dot(H) / N - np.eye(N)))) < 1e-8
 '''
-
-IPython.embed()
 
 
